@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}Panel{% endblock %} · Admin {{ store_name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.png') }}" type="image/png">
+</head>
+<body class="admin-body">
+  {% set ep = request.endpoint or '' %}
+  <aside class="admin-sidebar" id="adminSidebar">
+    <a href="{{ url_for('admin.dashboard') }}" class="logo">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="{{ store_name }}" class="logo-img">
+    </a>
+    <nav>
+      <span class="nav-section">General</span>
+      <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if ep == 'admin.dashboard' }}">📊 Dashboard</a>
+      <a href="{{ url_for('admin.orders') }}" class="{{ 'active' if 'order' in ep }}">🧾 Pedidos</a>
+      <a href="{{ url_for('admin.reports') }}" class="{{ 'active' if 'report' in ep }}">📈 Reportes</a>
+      <span class="nav-section">Catálogo</span>
+      <a href="{{ url_for('admin.products') }}" class="{{ 'active' if ep in ('admin.products','admin.product_new','admin.product_edit') }}">📦 Productos</a>
+      <a href="{{ url_for('admin.stock_overview') }}" class="{{ 'active' if 'stock' in ep }}">🏷️ Stock</a>
+      <a href="{{ url_for('admin.prices') }}" class="{{ 'active' if ep == 'admin.prices' }}">💲 Precios</a>
+      <a href="{{ url_for('admin.discounts') }}" class="{{ 'active' if 'discount' in ep }}">🎁 Descuentos</a>
+      <a href="{{ url_for('admin.categories') }}" class="{{ 'active' if 'categor' in ep }}">🗂️ Categorías</a>
+      <a href="{{ url_for('admin.brands') }}" class="{{ 'active' if 'brand' in ep }}">🏭 Marcas</a>
+      <span class="nav-section">Personas</span>
+      <a href="{{ url_for('admin.customers') }}" class="{{ 'active' if 'customer' in ep }}">👥 Clientes</a>
+    </nav>
+  </aside>
+
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <button class="nav-toggle admin-toggle" type="button" data-toggle="#adminSidebar" aria-label="Menú">
+        <span></span><span></span><span></span>
+      </button>
+      <h1 class="admin-title">{% block page_title %}{% endblock %}</h1>
+      <div class="admin-user">
+        <a href="{{ url_for('shop.index') }}" class="link small" target="_blank" rel="noopener">Ver tienda ↗</a>
+        <span class="hide-sm">{{ current_user.full_name }}</span>
+        <form method="post" action="{{ url_for('auth.logout') }}" class="inline-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-outline" type="submit">Salir</button>
+        </form>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+          <div class="alert alert-{{ cat }}" role="alert"><span>{{ msg }}</span>
+            <button type="button" class="alert-close" aria-label="Cerrar">&times;</button></div>
+        {% endfor %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>

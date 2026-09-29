@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Carrito{% endblock %}
+{% block content %}
+<div class="container">
+  <h1 class="page-title">Tu carrito</h1>
+
+  {% if cart.is_empty %}
+    <div class="empty-state card">
+      <h2>Tu carrito está vacío</h2>
+      <p class="muted">Explorá el catálogo y encontrá tu próximo vape.</p>
+      <a href="{{ url_for('shop.catalog') }}" class="btn btn-primary">Ir al catálogo</a>
+    </div>
+  {% else %}
+  <div class="cart-layout">
+    <div class="card cart-items">
+      {% for line in cart.lines %}
+        {% set p = line.product %}
+        <div class="cart-line" data-product="{{ p.id }}">
+          <a href="{{ url_for('shop.product_detail', slug=p.slug) }}" class="cart-thumb">
+            <img src="{{ url_for('static', filename='uploads/products/' ~ p.main_image.filename) if p.main_image else url_for('static', filename='img/no-image.svg') }}" alt="{{ p.name }}">
+          </a>
+          <div class="cart-info">
+            <a href="{{ url_for('shop.product_detail', slug=p.slug) }}" class="cart-name">{{ p.name }}</a>
+            <span class="muted small">{{ p.brand.name }}</span>
+            <div class="price">
+              {% if line.unit_price < line.unit_list_price %}<span class="price-old">{{ line.unit_list_price|money }}</span>{% endif %}
+              <span class="price-now small">{{ line.unit_price|money }} c/u</span>
+            </div>
+          </div>
+          <form method="post" action="{{ url_for('cart.update') }}" class="qty-form js-cart-qty">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="product_id" value="{{ p.id }}">
+            <div class="qty-control">
+              <button type="button" class="qty-btn" data-step="-1" aria-label="Restar">−</button>
+              <input type="number" name="quantity" value="{{ line.quantity }}" min="1" max="{{ [p.stock, 20]|min }}" aria-label="Cantidad">
+              <button type="button" class="qty-btn" data-step="1" aria-label="Sumar">+</button>
+            </div>
+            <noscript><button class="btn btn-sm btn-outline" type="submit">Actualizar</button></noscript>
+          </form>
+          <strong class="cart-line-total js-line-total">{{ line.line_total|money }}</strong>
+          <form method="post" action="{{ url_for('cart.remove') }}" class="inline-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="product_id" value="{{ p.id }}">
+            <button type="submit" class="icon-btn danger" aria-label="Quitar {{ p.name }}">✕</button>
+          </form>
+        </div>
+      {% endfor %}
+      <div class="cart-actions">
+        <a href="{{ url_for('shop.catalog') }}" class="link">← Seguir comprando</a>
+        <form method="post" action="{{ url_for('cart.clear') }}" class="inline-form" data-confirm="¿Vaciar el carrito?">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-sm btn-outline">Vaciar carrito</button>
+        </form>
+      </div>
+    </div>
+
+    <aside class="card summary">
+      <h3>Resumen</h3>
+      <div class="summary-row"><span>Subtotal</span><strong id="sumSubtotal">{{ cart.subtotal|money }}</strong></div>
+      <div class="summary-row text-success"><span>Ahorro por descuentos</span><strong id="sumDiscount">{{ cart.discount_total|money }}</strong></div>
+      <div class="summary-row"><span>Envío</span><strong id="sumShipping">{{ cart.shipping_cost|money if cart.shipping_cost else 'Gratis' }}</strong></div>
+      <div class="summary-row total"><span>Total</span><strong id="sumTotal">{{ cart.total|money }}</strong></div>
+      {% if cart.shipping_cost %}<p class="small muted">Envío gratis a partir de {{ free_shipping_from|money }}.</p>{% endif %}
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('cart.checkout') }}" class="btn btn-primary btn-block btn-lg">Finalizar compra</a>
+      {% else %}
+        <a href="{{ url_for('auth.login', next=url_for('cart.checkout')) }}" class="btn btn-primary btn-block btn-lg">Ingresar para comprar</a>
+        <p class="small muted center">Tu carrito se conserva al iniciar sesión.</p>
+      {% endif %}
+    </aside>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

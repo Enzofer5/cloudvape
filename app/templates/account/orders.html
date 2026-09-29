@@ -1,0 +1,33 @@
+{% extends "account/_layout.html" %}
+{% from "partials/_macros.html" import status_badge, pagination_nav %}
+{% block title %}Mis pedidos{% endblock %}
+{% block account_content %}
+<div class="card">
+  <h2>Historial de compras</h2>
+  {% if pagination.items %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Pedido</th><th>Fecha</th><th>Productos</th><th>Estado</th><th class="num">Total</th><th></th></tr></thead>
+        <tbody>
+        {% for o in pagination.items %}
+          <tr>
+            <td><strong>{{ o.order_number }}</strong></td>
+            <td>{{ o.created_at|dt }}</td>
+            <td>{{ o.items_count }}</td>
+            <td>{{ status_badge(o.status) }}</td>
+            <td class="num">{{ o.total|money }}</td>
+            <td><a class="btn btn-sm btn-outline" href="{{ url_for('account.order_detail', order_number=o.order_number) }}">Ver</a></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {{ pagination_nav(pagination, 'account.orders') }}
+  {% else %}
+    <div class="empty-state">
+      <p class="muted">Todavía no realizaste compras.</p>
+      <a href="{{ url_for('shop.catalog') }}" class="btn btn-primary">Ir al catálogo</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

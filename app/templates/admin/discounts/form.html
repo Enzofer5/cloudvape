@@ -1,0 +1,22 @@
+{% extends "admin/_layout.html" %}
+{% from "partials/_macros.html" import field %}
+{% block title %}Descuento{% endblock %}
+{% block page_title %}{{ 'Editar' if obj else 'Nuevo' }} descuento{% endblock %}
+{% block content %}
+<div class="card narrow-card">
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    {{ field(form.name) }}
+    <div class="row-2">{{ field(form.discount_type) }}{{ field(form.value) }}</div>
+    {{ field(form.target, class_="js-discount-target") }}
+    <div data-target-panel="product">{{ field(form.product_id) }}</div>
+    <div data-target-panel="category">{{ field(form.category_id) }}</div>
+    <div class="row-2">{{ field(form.starts_at) }}{{ field(form.ends_at) }}</div>
+    {{ field(form.is_active) }}
+    <div class="form-actions">
+      {{ form.submit(class="btn btn-primary") }}
+      <a href="{{ url_for('admin.discounts') }}" class="btn btn-outline">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

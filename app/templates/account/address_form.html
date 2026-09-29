@@ -1,0 +1,20 @@
+{% extends "account/_layout.html" %}
+{% from "partials/_macros.html" import field %}
+{% block title %}{{ 'Editar' if address else 'Nueva' }} dirección{% endblock %}
+{% block account_content %}
+<div class="card">
+  <h2>{{ 'Editar' if address else 'Nueva' }} dirección</h2>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    {{ field(form.label) }}
+    <div class="row-3">{{ field(form.street, class_="span-2") }}{{ field(form.street_number) }}</div>
+    <div class="row-3">{{ field(form.apartment) }}{{ field(form.city) }}{{ field(form.postal_code) }}</div>
+    {{ field(form.province) }}
+    {{ field(form.is_default) }}
+    <div class="form-actions">
+      {{ form.submit(class="btn btn-primary") }}
+      <a href="{{ url_for('account.addresses') }}" class="btn btn-outline">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

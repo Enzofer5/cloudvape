@@ -1,0 +1,30 @@
+{% extends "account/_layout.html" %}
+{% from "partials/_macros.html" import post_button %}
+{% block title %}Mis direcciones{% endblock %}
+{% block account_content %}
+<div class="card">
+  <div class="section-head">
+    <h2>Mis direcciones</h2>
+    <a href="{{ url_for('account.address_form') }}" class="btn btn-primary btn-sm">+ Nueva dirección</a>
+  </div>
+  {% if addresses %}
+    <div class="address-grid">
+      {% for a in addresses %}
+        <div class="address-card {{ 'is-default' if a.is_default }}">
+          <strong>{{ a.label }}</strong> {% if a.is_default %}<span class="badge">Principal</span>{% endif %}
+          <p>{{ a.one_line }}</p>
+          <div class="actions">
+            <a class="btn btn-sm btn-outline" href="{{ url_for('account.address_form', address_id=a.id) }}">Editar</a>
+            {% if not a.is_default %}
+              {{ post_button(url_for('account.address_default', address_id=a.id), 'Hacer principal', 'btn btn-sm btn-outline') }}
+            {% endif %}
+            {{ post_button(url_for('account.address_delete', address_id=a.id), 'Eliminar', 'btn btn-sm btn-danger', '¿Eliminar esta dirección?') }}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">No tenés direcciones guardadas.</p>
+  {% endif %}
+</div>
+{% endblock %}

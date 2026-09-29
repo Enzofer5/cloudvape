@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container account-layout">
+  <aside class="card account-nav">
+    <div class="account-user">
+      <div class="avatar">{{ current_user.first_name[:1] }}{{ current_user.last_name[:1] }}</div>
+      <div><strong>{{ current_user.full_name }}</strong><br><span class="muted small">{{ current_user.email }}</span></div>
+    </div>
+    {% set ep = request.endpoint %}
+    <a href="{{ url_for('account.profile') }}" class="{{ 'active' if ep == 'account.profile' }}">Mi perfil</a>
+    <a href="{{ url_for('account.orders') }}" class="{{ 'active' if ep in ('account.orders', 'account.order_detail') }}">Mis pedidos</a>
+    <a href="{{ url_for('account.addresses') }}" class="{{ 'active' if 'address' in ep }}">Direcciones</a>
+    <a href="{{ url_for('account.change_password') }}" class="{{ 'active' if ep == 'account.change_password' }}">Contraseña</a>
+  </aside>
+  <section class="account-main">
+    {% block account_content %}{% endblock %}
+  </section>
+</div>
+{% endblock %}

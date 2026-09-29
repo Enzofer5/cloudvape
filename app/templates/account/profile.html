@@ -1,0 +1,47 @@
+{% extends "account/_layout.html" %}
+{% from "partials/_macros.html" import field, status_badge %}
+{% block title %}Mi perfil{% endblock %}
+{% block account_content %}
+<div class="card">
+  <h2>Mis datos</h2>
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="row-2">{{ field(form.first_name) }}{{ field(form.last_name) }}</div>
+    <div class="row-2">
+      {{ field(form.phone) }}
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-control" value="{{ current_user.email }}" disabled>
+      </div>
+    </div>
+    <p class="small muted">Fecha de nacimiento: {{ current_user.birth_date.strftime('%d/%m/%Y') }} · Cliente desde {{ current_user.created_at.strftime('%m/%Y') }}</p>
+    {{ form.submit(class="btn btn-primary") }}
+  </form>
+</div>
+
+<div class="card">
+  <div class="section-head">
+    <h2>Últimos pedidos</h2>
+    <a href="{{ url_for('account.orders') }}" class="link">Ver todos →</a>
+  </div>
+  {% if recent_orders %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Pedido</th><th>Fecha</th><th>Estado</th><th class="num">Total</th></tr></thead>
+        <tbody>
+        {% for o in recent_orders %}
+          <tr>
+            <td><a class="link" href="{{ url_for('account.order_detail', order_number=o.order_number) }}">{{ o.order_number }}</a></td>
+            <td>{{ o.created_at|dt }}</td>
+            <td>{{ status_badge(o.status) }}</td>
+            <td class="num">{{ o.total|money }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="muted">Todavía no hiciste pedidos.</p>
+  {% endif %}
+</div>
+{% endblock %}

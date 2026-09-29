@@ -1,0 +1,20 @@
+{% extends "admin/_layout.html" %}
+{% from "partials/_macros.html" import field %}
+{% block title %}Cliente{% endblock %}
+{% block page_title %}{{ 'Editar cliente' if customer else 'Nuevo cliente' }}{% endblock %}
+{% block content %}
+<div class="card narrow-card">
+  <form method="post" novalidate autocomplete="off">
+    {{ form.hidden_tag() }}
+    <div class="row-2">{{ field(form.first_name) }}{{ field(form.last_name) }}</div>
+    {{ field(form.email) }}
+    <div class="row-2">{{ field(form.phone) }}{{ field(form.birth_date) }}</div>
+    {{ field(form.password, help=("Dejá vacío para mantener la actual. " if customer else "") ~ "Mínimo 8 caracteres, letras y números.") }}
+    {{ field(form.is_active) }}
+    <div class="form-actions">
+      {{ form.submit(class="btn btn-primary") }}
+      <a href="{{ url_for('admin.customer_detail', user_id=customer.id) if customer else url_for('admin.customers') }}" class="btn btn-outline">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

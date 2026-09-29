@@ -1,0 +1,40 @@
+{% extends "admin/_layout.html" %}
+{% from "partials/_macros.html" import pagination_nav, status_badge %}
+{% block title %}Pedidos{% endblock %}
+{% block page_title %}Pedidos{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <form method="get" class="filter-bar">
+    <input type="search" name="q" value="{{ q }}" placeholder="N° pedido, email, apellido" class="form-control" maxlength="100">
+    <select name="status" class="form-control">
+      <option value="">Todos los estados</option>
+      {% for s in statuses %}<option value="{{ s.code }}" {{ 'selected' if status == s.code }}>{{ s.name }}</option>{% endfor %}
+    </select>
+    <label class="inline-label">Desde <input type="date" name="from" value="{{ date_from or '' }}" class="form-control"></label>
+    <label class="inline-label">Hasta <input type="date" name="to" value="{{ date_to or '' }}" class="form-control"></label>
+    <button class="btn btn-outline" type="submit">Filtrar</button>
+    <a class="link small" href="{{ url_for('admin.orders') }}">Limpiar</a>
+  </form>
+</div>
+<div class="card">
+  <p class="muted small">{{ pagination.total }} pedido(s)</p>
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Pedido</th><th>Fecha</th><th>Cliente</th><th>Pago</th><th class="num">Items</th><th class="num">Total</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+    {% for o in pagination.items %}
+      <tr>
+        <td><strong>{{ o.order_number }}</strong></td>
+        <td>{{ o.created_at|dt }}</td>
+        <td>{{ o.user.full_name }}<br><small class="muted">{{ o.user.email }}</small></td>
+        <td>{{ o.payment_label }}</td>
+        <td class="num">{{ o.items_count }}</td>
+        <td class="num">{{ o.total|money }}</td>
+        <td>{{ status_badge(o.status) }}</td>
+        <td><a class="btn btn-sm btn-outline" href="{{ url_for('admin.order_detail', order_id=o.id) }}">Gestionar</a></td>
+      </tr>
+    {% else %}<tr><td colspan="8" class="muted center">No hay pedidos con esos filtros.</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+  {{ pagination_nav(pagination, 'admin.orders', query_args) }}
+</div>
+{% endblock %}

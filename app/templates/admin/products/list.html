@@ -1,0 +1,58 @@
+{% extends "admin/_layout.html" %}
+{% from "partials/_macros.html" import pagination_nav, post_button %}
+{% block title %}Productos{% endblock %}
+{% block page_title %}Productos{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <form method="get" class="filter-bar">
+    <input type="search" name="q" value="{{ request.args.get('q','') }}" placeholder="Nombre o SKU" class="form-control" maxlength="100">
+    <select name="category" class="form-control">
+      <option value="">Todas las categorías</option>
+      {% for c in categories %}<option value="{{ c.id }}" {{ 'selected' if request.args.get('category')|int == c.id }}>{{ c.name }}</option>{% endfor %}
+    </select>
+    <select name="brand" class="form-control">
+      <option value="">Todas las marcas</option>
+      {% for b in brands %}<option value="{{ b.id }}" {{ 'selected' if request.args.get('brand')|int == b.id }}>{{ b.name }}</option>{% endfor %}
+    </select>
+    <select name="status" class="form-control">
+      {% set st = request.args.get('status','') %}
+      <option value="">Todos</option>
+      <option value="active" {{ 'selected' if st=='active' }}>Publicados</option>
+      <option value="inactive" {{ 'selected' if st=='inactive' }}>Ocultos</option>
+      <option value="low_stock" {{ 'selected' if st=='low_stock' }}>Stock bajo</option>
+    </select>
+    <button class="btn btn-outline" type="submit">Filtrar</button>
+  </form>
+  <a href="{{ url_for('admin.product_new') }}" class="btn btn-primary">+ Nuevo producto</a>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+  <table class="table">
+    <thead><tr><th></th><th>Producto</th><th>Categoría</th><th>Marca</th><th class="num">Precio</th><th class="num">Stock</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+    {% for p in pagination.items %}
+      <tr>
+        <td><img class="table-thumb" src="{{ url_for('static', filename='uploads/products/' ~ p.main_image.filename) if p.main_image else url_for('static', filename='img/no-image.svg') }}" alt=""></td>
+        <td><a class="link" href="{{ url_for('admin.product_edit', product_id=p.id) }}">{{ p.name }}</a><br><small class="muted">{{ p.sku }}</small></td>
+        <td>{{ p.category.name }}</td>
+        <td>{{ p.brand.name }}</td>
+        <td class="num">{{ p.price|money }}
+          {% set pi = price_info(p) %}{% if pi.has_discount %}<br><small class="text-success">{{ pi.final_price|money }}</small>{% endif %}</td>
+        <td class="num"><a href="{{ url_for('admin.product_stock', product_id=p.id) }}" class="badge {{ 'badge-danger' if p.stock == 0 else ('badge-warning' if p.low_stock else 'badge-ok') }}">{{ p.stock }}</a></td>
+        <td>{% if p.is_active %}<span class="badge badge-ok">Publicado</span>{% else %}<span class="badge badge-muted">Oculto</span>{% endif %}
+            {% if p.is_featured %}<span class="badge">★</span>{% endif %}</td>
+        <td class="actions">
+          <a href="{{ url_for('admin.product_edit', product_id=p.id) }}" class="btn btn-sm btn-outline">Editar</a>
+          {{ post_button(url_for('admin.product_delete', product_id=p.id), 'Eliminar', confirm='¿Eliminar el producto? Si tiene ventas se ocultará.') }}
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="8" class="muted center">No hay productos.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {{ pagination_nav(pagination, 'admin.products', query_args) }}
+</div>
+{% endblock %}

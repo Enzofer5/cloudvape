@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import field %}
+{% block title %}Ingresar{% endblock %}
+{% block content %}
+<div class="container auth-wrap">
+  <div class="card auth-card">
+    <h1>Ingresar</h1>
+    <p class="muted">Accedé a tu cuenta para comprar y seguir tus pedidos.</p>
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      {{ field(form.email, placeholder="tu@email.com") }}
+      {{ field(form.password) }}
+      <div class="row-between">
+        {{ field(form.remember) }}
+        <a href="{{ url_for('auth.forgot_password') }}" class="link small">¿Olvidaste tu contraseña?</a>
+      </div>
+      {{ form.submit(class="btn btn-primary btn-block") }}
+    </form>
+    <p class="auth-alt">¿No tenés cuenta? <a href="{{ url_for('auth.register', next=request.args.get('next')) }}" class="link">Registrate</a></p>
+  </div>
+</div>
+{% endblock %}

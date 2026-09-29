@@ -1,0 +1,30 @@
+{% extends "admin/_layout.html" %}
+{% from "partials/_macros.html" import post_button %}
+{% block title %}Descuentos{% endblock %}
+{% block page_title %}Descuentos y promociones{% endblock %}
+{% block content %}
+<div class="toolbar"><p class="muted small">Si un producto tiene varios descuentos vigentes, se aplica el más conveniente para el cliente.</p>
+  <a href="{{ url_for('admin.discount_form') }}" class="btn btn-primary">+ Nuevo descuento</a></div>
+<div class="card">
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Nombre</th><th>Aplica a</th><th>Valor</th><th>Vigencia</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+    {% for d in items %}
+      <tr>
+        <td><strong>{{ d.name }}</strong></td>
+        <td>{{ d.target_label }}</td>
+        <td>{{ d.value_label }}</td>
+        <td><small>{{ d.starts_at|dt }}<br>{{ d.ends_at|dt }}</small></td>
+        <td>{% if d.is_current %}<span class="badge badge-ok">Vigente</span>
+            {% elif not d.is_active %}<span class="badge badge-muted">Inactivo</span>
+            {% else %}<span class="badge badge-warning">Fuera de fecha</span>{% endif %}</td>
+        <td class="actions">
+          <a class="btn btn-sm btn-outline" href="{{ url_for('admin.discount_form', discount_id=d.id) }}">Editar</a>
+          {{ post_button(url_for('admin.discount_delete', discount_id=d.id), 'Eliminar', confirm='¿Eliminar el descuento?') }}
+        </td>
+      </tr>
+    {% else %}<tr><td colspan="6" class="muted center">No hay descuentos cargados.</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</div>
+{% endblock %}
