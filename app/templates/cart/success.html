@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Pedido confirmado{% endblock %}
+{% block content %}
+<div class="container narrow">
+  <div class="card center success-card">
+    <div class="success-icon">✓</div>
+    <h1>¡Gracias por tu compra!</h1>
+    <p>Tu pedido <strong>{{ order.order_number }}</strong> fue registrado correctamente.</p>
+    <p class="muted">Estado actual: {{ order.status.name }} · Total: <strong>{{ order.total|money }}</strong></p>
+    {% if order.payment_method == 'transfer' %}
+      <div class="info-box">
+        <strong>Datos para transferir</strong><br>
+        Alias: PUNTO.VAPE · Titular: {{ store_name }}<br>
+        Indicá el número de pedido en el concepto.
+      </div>
+    {% endif %}
+    <div class="hero-actions center">
+      <a href="{{ url_for('account.order_detail', order_number=order.order_number) }}" class="btn btn-primary">Ver pedido</a>
+      <a href="{{ url_for('shop.catalog') }}" class="btn btn-outline">Seguir comprando</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

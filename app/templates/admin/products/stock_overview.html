@@ -1,0 +1,25 @@
+{% extends "admin/_layout.html" %}
+{% block title %}Stock{% endblock %}
+{% block page_title %}Control de stock{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="section-head">
+    <h3>Productos con stock bajo o agotado ({{ products|length }})</h3>
+    <a href="{{ url_for('admin.products') }}" class="link small">Ver todos los productos</a>
+  </div>
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Producto</th><th>Marca</th><th class="num">Stock</th><th class="num">Mínimo</th><th></th></tr></thead>
+    <tbody>
+    {% for p in products %}
+      <tr>
+        <td>{{ p.name }}<br><small class="muted">{{ p.sku }}</small></td>
+        <td>{{ p.brand.name }}</td>
+        <td class="num"><span class="badge {{ 'badge-danger' if p.stock == 0 else 'badge-warning' }}">{{ p.stock }}</span></td>
+        <td class="num">{{ p.min_stock }}</td>
+        <td><a class="btn btn-sm btn-primary" href="{{ url_for('admin.product_stock', product_id=p.id) }}">Reponer</a></td>
+      </tr>
+    {% else %}<tr><td colspan="5" class="muted center">Todo el stock está en niveles normales. 🎉</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</div>
+{% endblock %}

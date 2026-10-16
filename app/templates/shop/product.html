@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import product_card, price_block %}
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <nav class="breadcrumb">
+    <a href="{{ url_for('shop.index') }}">Inicio</a> /
+    <a href="{{ url_for('shop.catalog', category=product.category.slug) }}">{{ product.category.name }}</a> /
+    <span>{{ product.name }}</span>
+  </nav>
+
+  <div class="product-detail">
+    <div class="gallery">
+      <div class="gallery-main">
+        {% if product.images %}
+          <img id="galleryMain" src="{{ url_for('static', filename='uploads/products/' ~ product.images[0].filename) }}" alt="{{ product.name }}">
+        {% else %}
+          <img id="galleryMain" src="{{ url_for('static', filename='img/no-image.svg') }}" alt="Sin imagen">
+        {% endif %}
+      </div>
+      {% if product.images|length > 1 %}
+        <div class="gallery-thumbs">
+          {% for img in product.images %}
+            <button type="button" class="thumb {{ 'active' if loop.first }}"
+                    data-src="{{ url_for('static', filename='uploads/products/' ~ img.filename) }}">
+              <img src="{{ url_for('static', filename='uploads/products/' ~ img.filename) }}" alt="Imagen {{ loop.index }} de {{ product.name }}" loading="lazy">
+            </button>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="product-info">
+      <a class="product-brand" href="{{ url_for('shop.catalog', brand=product.brand.id) }}">{{ product.brand.name }}</a>
+      <h1>{{ product.name }}</h1>
+      <p class="muted small">SKU: {{ product.sku }}</p>
+
+      {{ price_block(product, big=True) }}
+
+      {% if product.short_description %}<p class="lead">{{ product.short_description }}</p>{% endif %}
+
+      <ul class="specs">
+        {% if product.flavor %}<li><span>Sabor</span><strong>{{ product.flavor }}</strong></li>{% endif %}
+        {% if product.puffs %}<li><span>Puffs</span><strong>{{ product.puffs }}</strong></li>{% endif %}
+        {% if product.nicotine_mg is not none %}<li><span>Nicotina</span><strong>{{ product.nicotine_mg }} mg/ml</strong></li>{% endif %}
+        {% if product.volume_ml %}<li><span>Volumen</span><strong>{{ product.volume_ml }} ml</strong></li>{% endif %}
+        <li><span>Disponibilidad</span>
+          <strong class="{{ 'text-success' if product.in_stock else 'text-danger' }}">
+            {% if product.stock > 10 %}En stock{% elif product.in_stock %}¡Últimas {{ product.stock }} unidades!{% else %}Sin stock{% endif %}
+          </strong>
+        </li>
+      </ul>
+
+      {% if product.in_stock %}
+        <form method="post" action="{{ url_for('cart.add') }}" class="add-form js-add-to-cart">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="product_id" value="{{ product.id }}">
+          <div class="qty-control">
+            <button type="button" class="qty-btn" data-step="-1" aria-label="Restar">−</button>
+            <input type="number" name="quantity" value="1" min="1" max="{{ [product.stock, 20]|min }}" aria-label="Cantidad">
+            <button type="button" class="qty-btn" data-step="1" aria-label="Sumar">+</button>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg">Agregar al carrito</button>
+        </form>
+      {% else %}
+        <button class="btn btn-outline btn-lg" disabled>Sin stock</button>
+      {% endif %}
+
+      {% if product.nicotine_mg %}
+        <div class="warning-box">⚠️ Este producto contiene nicotina, una sustancia altamente adictiva.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if product.description %}
+  <section class="section card">
+    <h2 class="section-title">Descripción</h2>
+    {# Se escapa el texto (autoescape) y solo se convierten saltos de línea en párrafos #}
+    {% for para in product.description.split('\n') if para.strip() %}
+      <p>{{ para }}</p>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {% if related %}
+  <section class="section">
+    <h2 class="section-title">También te puede interesar</h2>
+    <div class="product-grid">{% for p in related %}{{ product_card(p) }}{% endfor %}</div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

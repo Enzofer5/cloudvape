@@ -1,0 +1,72 @@
+{% extends "account/_layout.html" %}
+{% from "partials/_macros.html" import status_badge, post_button %}
+{% block title %}Pedido {{ order.order_number }}{% endblock %}
+{% block account_content %}
+<div class="card">
+  <div class="section-head">
+    <div>
+      <h2>Pedido {{ order.order_number }}</h2>
+      <span class="muted small">Realizado el {{ order.created_at|dt }}</span>
+    </div>
+    {{ status_badge(order.status) }}
+  </div>
+
+  {# Línea de tiempo del estado #}
+  {% if order.status.code != 'cancelled' %}
+    <ol class="timeline">
+      {% for s in statuses if s.code != 'cancelled' %}
+        <li class="{{ 'done' if s.sort_order <= order.status.sort_order }} {{ 'current' if s.id == order.status_id }}">
+          <span class="dot"></span><span class="label">{{ s.name }}</span>
+        </li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <div class="alert alert-danger">Este pedido fue cancelado.</div>
+  {% endif %}
+
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Producto</th><th class="num">Precio</th><th class="num">Cant.</th><th class="num">Subtotal</th></tr></thead>
+      <tbody>
+      {% for i in order.items %}
+        <tr>
+          <td>{{ i.product_name }}</td>
+          <td class="num">
+            {% if i.unit_price < i.list_price %}<span class="price-old">{{ i.list_price|money }}</span><br>{% endif %}
+            {{ i.unit_price|money }}
+          </td>
+          <td class="num">{{ i.quantity }}</td>
+          <td class="num">{{ i.line_total|money }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr><td colspan="3" class="num">Subtotal</td><td class="num">{{ order.subtotal|money }}</td></tr>
+        {% if order.discount_total %}<tr class="text-success"><td colspan="3" class="num">Ahorro</td><td class="num">-{{ order.discount_total|money }}</td></tr>{% endif %}
+        <tr><td colspan="3" class="num">Envío</td><td class="num">{{ order.shipping_cost|money if order.shipping_cost else 'Gratis' }}</td></tr>
+        <tr class="total"><td colspan="3" class="num">Total</td><td class="num">{{ order.total|money }}</td></tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="row-2 info-grid">
+    <div><h4>Envío</h4><p>{{ order.recipient_name }} · {{ order.recipient_phone }}<br>{{ order.shipping_address }}</p>
+      {% if order.notes %}<p class="muted small">Notas: {{ order.notes }}</p>{% endif %}</div>
+    <div><h4>Pago</h4><p>{{ order.payment_label }}</p></div>
+  </div>
+
+  <h4>Historial</h4>
+  <ul class="history">
+    {% for h in order.history %}
+      <li><span class="muted small">{{ h.created_at|dt }}</span> — {{ h.status.name }}{% if h.comment %}: {{ h.comment }}{% endif %}</li>
+    {% endfor %}
+  </ul>
+
+  <div class="form-actions">
+    <a href="{{ url_for('account.orders') }}" class="btn btn-outline">← Volver</a>
+    {% if order.status.code == 'pending' %}
+      {{ post_button(url_for('account.order_cancel', order_number=order.order_number), 'Cancelar pedido', 'btn btn-danger', '¿Seguro que querés cancelar el pedido?') }}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

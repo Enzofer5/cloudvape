@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import field %}
+{% block title %}Crear cuenta{% endblock %}
+{% block content %}
+<div class="container auth-wrap">
+  <div class="card auth-card auth-card-wide">
+    <h1>Crear cuenta</h1>
+    <p class="muted">Solo para mayores de 18 años.</p>
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="row-2">
+        {{ field(form.first_name) }}
+        {{ field(form.last_name) }}
+      </div>
+      {{ field(form.email, placeholder="tu@email.com") }}
+      <div class="row-2">
+        {{ field(form.phone, placeholder="11 5555-5555") }}
+        {{ field(form.birth_date) }}
+      </div>
+      <div class="row-2">
+        {{ field(form.password, help="Mínimo 8 caracteres, con letras y números.") }}
+        {{ field(form.confirm) }}
+      </div>
+      {{ field(form.accept_terms) }}
+      <p class="small muted"><a class="link" href="{{ url_for('shop.terms') }}" target="_blank" rel="noopener">Leer términos y condiciones</a></p>
+      {{ form.submit(class="btn btn-primary btn-block") }}
+    </form>
+    <p class="auth-alt">¿Ya tenés cuenta? <a href="{{ url_for('auth.login') }}" class="link">Ingresá</a></p>
+  </div>
+</div>
+{% endblock %}

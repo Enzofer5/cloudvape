@@ -1,0 +1,26 @@
+{% extends "admin/_layout.html" %}
+{% from "partials/_macros.html" import post_button %}
+{% block title %}Marcas{% endblock %}
+{% block page_title %}Marcas{% endblock %}
+{% block content %}
+<div class="toolbar"><span></span><a href="{{ url_for('admin.brand_form') }}" class="btn btn-primary">+ Nueva marca</a></div>
+<div class="card">
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Nombre</th><th class="num">Productos</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+    {% for c in items %}
+      <tr>
+        <td><strong>{{ c.name }}</strong><br><small class="muted">/{{ c.slug }}</small></td>
+        
+        <td class="num">{{ counts[c.id] }}</td>
+        <td>{% if c.is_active %}<span class="badge badge-ok">Activa</span>{% else %}<span class="badge badge-muted">Inactiva</span>{% endif %}</td>
+        <td class="actions">
+          <a class="btn btn-sm btn-outline" href="{{ url_for('admin.brand_form', brand_id=c.id) }}">Editar</a>
+          {{ post_button(url_for('admin.brand_delete', brand_id=c.id), 'Eliminar', confirm='¿Eliminar definitivamente?') }}
+        </td>
+      </tr>
+    {% else %}<tr><td colspan="5" class="muted center">Sin registros.</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import field %}
+{% block title %}Checkout{% endblock %}
+{% block content %}
+<div class="container">
+  <h1 class="page-title">Finalizar compra</h1>
+  <form method="post" novalidate class="checkout-layout">
+    {{ form.hidden_tag() }}
+    <div class="checkout-main">
+      <section class="card">
+        <h3>1. Datos de envío</h3>
+        {% if addresses %}
+          <div class="saved-addresses">
+            <span class="form-label">Usar una dirección guardada:</span>
+            {% for a in addresses %}
+              <button type="button" class="chip js-fill-address"
+                      data-street="{{ a.street }}" data-number="{{ a.street_number }}" data-apartment="{{ a.apartment or '' }}"
+                      data-city="{{ a.city }}" data-province="{{ a.province }}" data-postal="{{ a.postal_code }}">
+                {{ a.label }} · {{ a.street }} {{ a.street_number }}
+              </button>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <div class="row-2">
+          {{ field(form.recipient_name) }}
+          {{ field(form.recipient_phone) }}
+        </div>
+        <div class="row-3">
+          {{ field(form.street, class_="span-2") }}
+          {{ field(form.street_number) }}
+        </div>
+        <div class="row-3">
+          {{ field(form.apartment) }}
+          {{ field(form.city) }}
+          {{ field(form.postal_code) }}
+        </div>
+        {{ field(form.province) }}
+        {{ field(form.notes) }}
+        {{ field(form.save_address) }}
+      </section>
+
+      <section class="card">
+        <h3>2. Medio de pago</h3>
+        {{ field(form.payment_method) }}
+        <p class="small muted">Te enviaremos los datos para transferir o coordinaremos el pago al recibir. El pedido queda
+          <strong>pendiente</strong> hasta acreditar el pago.</p>
+      </section>
+
+      <section class="card">
+        <h3>3. Confirmación</h3>
+        {{ field(form.confirm_age) }}
+      </section>
+    </div>
+
+    <aside class="card summary">
+      <h3>Tu pedido</h3>
+      {% for line in cart.lines %}
+        <div class="summary-item">
+          <span>{{ line.quantity }} × {{ line.product.name }}</span>
+          <strong>{{ line.line_total|money }}</strong>
+        </div>
+      {% endfor %}
+      <hr>
+      <div class="summary-row"><span>Subtotal</span><strong>{{ cart.subtotal|money }}</strong></div>
+      {% if cart.discount_total %}<div class="summary-row text-success"><span>Descuentos</span><strong>-{{ cart.discount_total|money }}</strong></div>{% endif %}
+      <div class="summary-row"><span>Envío</span><strong>{{ cart.shipping_cost|money if cart.shipping_cost else 'Gratis' }}</strong></div>
+      <div class="summary-row total"><span>Total</span><strong>{{ cart.total|money }}</strong></div>
+      {{ form.submit(class="btn btn-primary btn-block btn-lg") }}
+      <a href="{{ url_for('cart.view') }}" class="link small center block">Volver al carrito</a>
+    </aside>
+  </form>
+</div>
+{% endblock %}

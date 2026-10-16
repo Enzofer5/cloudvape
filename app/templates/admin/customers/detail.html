@@ -1,0 +1,42 @@
+{% extends "admin/_layout.html" %}
+{% from "partials/_macros.html" import status_badge %}
+{% block title %}{{ customer.full_name }}{% endblock %}
+{% block page_title %}{{ customer.full_name }}{% endblock %}
+{% block content %}
+<div class="admin-grid-2">
+  <div class="card">
+    <h3>Datos del cliente</h3>
+    <dl class="dl">
+      <dt>Email</dt><dd>{{ customer.email }}</dd>
+      <dt>Teléfono</dt><dd>{{ customer.phone or '—' }}</dd>
+      <dt>Nacimiento</dt><dd>{{ customer.birth_date.strftime('%d/%m/%Y') }} ({{ customer.age }} años)</dd>
+      <dt>Alta</dt><dd>{{ customer.created_at|dt }}</dd>
+      <dt>Último ingreso</dt><dd>{{ customer.last_login_at|dt or '—' }}</dd>
+      <dt>Estado</dt><dd>{% if customer.is_active %}<span class="badge badge-ok">Activo</span>{% else %}<span class="badge badge-muted">Inactivo</span>{% endif %}</dd>
+    </dl>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('admin.customer_edit', user_id=customer.id) }}">Editar</a>
+  </div>
+  <div class="card">
+    <h3>Direcciones</h3>
+    {% for a in customer.addresses %}
+      <p><strong>{{ a.label }}</strong>{% if a.is_default %} <span class="badge">Principal</span>{% endif %}<br>{{ a.one_line }}</p>
+    {% else %}<p class="muted">Sin direcciones guardadas.</p>{% endfor %}
+    <h3>Resumen</h3>
+    {% set valid = orders|rejectattr('status.code', 'equalto', 'cancelled')|list %}
+    <p>{{ orders|length }} pedidos · {{ valid|length }} válidos · Total comprado:
+      <strong>{{ valid|sum(attribute='total')|money }}</strong></p>
+  </div>
+</div>
+<div class="card">
+  <h3>Pedidos</h3>
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Pedido</th><th>Fecha</th><th>Estado</th><th class="num">Total</th></tr></thead>
+    <tbody>
+    {% for o in orders %}
+      <tr><td><a class="link" href="{{ url_for('admin.order_detail', order_id=o.id) }}">{{ o.order_number }}</a></td>
+          <td>{{ o.created_at|dt }}</td><td>{{ status_badge(o.status) }}</td><td class="num">{{ o.total|money }}</td></tr>
+    {% else %}<tr><td colspan="4" class="muted">Sin pedidos.</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</div>
+{% endblock %}

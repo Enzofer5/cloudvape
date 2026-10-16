@@ -1,0 +1,41 @@
+{% extends "admin/_layout.html" %}
+{% from "partials/_macros.html" import field %}
+{% block title %}Stock · {{ product.name }}{% endblock %}
+{% block page_title %}Stock: {{ product.name }}{% endblock %}
+{% block content %}
+<div class="admin-grid-2">
+  <div class="card">
+    <h3>Stock actual</h3>
+    <p class="big-number {{ 'text-danger' if product.low_stock }}">{{ product.stock }} <small>unidades</small></p>
+    <p class="muted small">Mínimo configurado: {{ product.min_stock }} · SKU {{ product.sku }}</p>
+    <a href="{{ url_for('admin.product_edit', product_id=product.id) }}" class="link">← Volver al producto</a>
+  </div>
+  <div class="card">
+    <h3>Registrar movimiento</h3>
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      {{ field(form.change_qty, help="Ej.: 50 para ingresar mercadería, -2 para dar de baja unidades dañadas.") }}
+      {{ field(form.reason) }}
+      {{ field(form.note) }}
+      {{ form.submit(class="btn btn-primary") }}
+    </form>
+  </div>
+</div>
+<div class="card">
+  <h3>Historial de movimientos</h3>
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Fecha</th><th>Motivo</th><th class="num">Cantidad</th><th>Usuario</th><th>Pedido / Nota</th></tr></thead>
+    <tbody>
+    {% for m in movements %}
+      <tr>
+        <td>{{ m.created_at|dt }}</td>
+        <td>{{ m.reason_label }}</td>
+        <td class="num {{ 'text-success' if m.change_qty > 0 else 'text-danger' }}">{{ '%+d'|format(m.change_qty) }}</td>
+        <td>{{ m.user.full_name if m.user else '—' }}</td>
+        <td>{% if m.order %}<a class="link" href="{{ url_for('admin.order_detail', order_id=m.order.id) }}">{{ m.order.order_number }}</a>{% endif %} {{ m.note or '' }}</td>
+      </tr>
+    {% else %}<tr><td colspan="5" class="muted">Sin movimientos.</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</div>
+{% endblock %}

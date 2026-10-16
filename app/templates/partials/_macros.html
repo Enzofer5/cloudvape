@@ -1,0 +1,117 @@
+{# ================= Macros reutilizables ================= #}
+
+{% macro field(f, class_="", placeholder=None, help=None) %}
+  {% if f.type == "BooleanField" %}
+    <div class="form-check {{ class_ }}">
+      {{ f(class="check-input") }}
+      {{ f.label(class="check-label") }}
+      {% for e in f.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+    </div>
+  {% elif f.type == "RadioField" %}
+    <fieldset class="form-group {{ class_ }}">
+      <legend class="form-label">{{ f.label.text }}</legend>
+      <div class="radio-list">
+        {% for sub in f %}
+          <label class="radio-card">{{ sub() }} <span>{{ sub.label.text }}</span></label>
+        {% endfor %}
+      </div>
+      {% for e in f.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+    </fieldset>
+  {% else %}
+    <div class="form-group {{ class_ }}">
+      {{ f.label(class="form-label") }}
+      {% set cls = "form-control" ~ (" is-invalid" if f.errors else "") %}
+      {% if f.type == "MultipleFileField" %}
+        {{ f(class=cls, multiple=True, accept="image/jpeg,image/png,image/webp") }}
+      {% elif placeholder %}
+        {{ f(class=cls, placeholder=placeholder) }}
+      {% else %}
+        {{ f(class=cls) }}
+      {% endif %}
+      {% if help %}<small class="form-help">{{ help }}</small>{% endif %}
+      {% for e in f.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+    </div>
+  {% endif %}
+{% endmacro %}
+
+
+{% macro pagination_nav(pagination, endpoint, args={}) %}
+  {% if pagination.pages > 1 %}
+  <nav class="pagination" aria-label="Paginación">
+    {% if pagination.has_prev %}
+      <a class="page-link" href="{{ url_for(endpoint, page=pagination.prev_num, **args) }}">&laquo;</a>
+    {% endif %}
+    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+      {% if p %}
+        <a class="page-link {{ 'active' if p == pagination.page }}" href="{{ url_for(endpoint, page=p, **args) }}">{{ p }}</a>
+      {% else %}<span class="page-gap">…</span>{% endif %}
+    {% endfor %}
+    {% if pagination.has_next %}
+      <a class="page-link" href="{{ url_for(endpoint, page=pagination.next_num, **args) }}">&raquo;</a>
+    {% endif %}
+  </nav>
+  {% endif %}
+{% endmacro %}
+
+
+{% macro price_block(product, big=False) %}
+  {% set pi = price_info(product) %}
+  <div class="price {{ 'price-lg' if big }}">
+    {% if pi.has_discount %}
+      <span class="price-old">{{ pi.list_price|money }}</span>
+      <span class="price-now">{{ pi.final_price|money }}</span>
+      <span class="badge badge-sale">-{{ pi.percent_off }}%</span>
+    {% else %}
+      <span class="price-now">{{ pi.list_price|money }}</span>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+
+{% macro product_card(p) %}
+  {% set pi = price_info(p) %}
+  <article class="product-card">
+    <a href="{{ url_for('shop.product_detail', slug=p.slug) }}" class="product-thumb">
+      {% if p.main_image %}
+        <img src="{{ url_for('static', filename='uploads/products/' ~ p.main_image.filename) }}" alt="{{ p.name }}" loading="lazy">
+      {% else %}
+        <img src="{{ url_for('static', filename='img/no-image.svg') }}" alt="Sin imagen" loading="lazy">
+      {% endif %}
+      {% if pi.has_discount %}<span class="badge badge-sale corner">-{{ pi.percent_off }}%</span>{% endif %}
+      {% if not p.in_stock %}<span class="badge badge-muted corner-right">Sin stock</span>{% endif %}
+    </a>
+    <div class="product-body">
+      <span class="product-brand">{{ p.brand.name }}</span>
+      <h3 class="product-title"><a href="{{ url_for('shop.product_detail', slug=p.slug) }}">{{ p.name }}</a></h3>
+      <div class="product-meta">
+        {% if p.puffs %}<span>{{ p.puffs }} puffs</span>{% endif %}
+        {% if p.nicotine_mg is not none %}<span>{{ p.nicotine_mg|round(0)|int }} mg</span>{% endif %}
+        {% if p.volume_ml %}<span>{{ p.volume_ml|round(0)|int }} ml</span>{% endif %}
+      </div>
+      {{ price_block(p) }}
+      {% if p.in_stock %}
+      <form method="post" action="{{ url_for('cart.add') }}" class="js-add-to-cart">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="product_id" value="{{ p.id }}">
+        <input type="hidden" name="quantity" value="1">
+        <button type="submit" class="btn btn-primary btn-block">Agregar al carrito</button>
+      </form>
+      {% else %}
+        <button class="btn btn-outline btn-block" disabled>Sin stock</button>
+      {% endif %}
+    </div>
+  </article>
+{% endmacro %}
+
+
+{% macro status_badge(status) %}
+  <span class="status status-{{ status.code }}">{{ status.name }}</span>
+{% endmacro %}
+
+
+{% macro post_button(action, label, class_="btn btn-sm btn-danger", confirm=None) %}
+  <form method="post" action="{{ action }}" class="inline-form" {% if confirm %}data-confirm="{{ confirm }}"{% endif %}>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="{{ class_ }}">{{ label }}</button>
+  </form>
+{% endmacro %}

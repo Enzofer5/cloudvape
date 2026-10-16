@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import product_card, pagination_nav %}
+{% block title %}Catálogo{% endblock %}
+
+{% block content %}
+<div class="container catalog-layout">
+  <aside class="filters" id="filters">
+    <form method="get" action="{{ url_for('shop.catalog') }}" class="filters-form">
+      <div class="filters-head">
+        <h3>Filtros</h3>
+        <a href="{{ url_for('shop.catalog') }}" class="link small">Limpiar</a>
+      </div>
+      {% if filters.q %}<input type="hidden" name="q" value="{{ filters.q }}">{% endif %}
+      <input type="hidden" name="sort" value="{{ filters.sort }}">
+
+      <div class="filter-block">
+        <label class="form-label" for="f-category">Categoría</label>
+        <select name="category" id="f-category" class="form-control js-autosubmit">
+          <option value="">Todas</option>
+          {% for c in categories %}
+            <option value="{{ c.slug }}" {{ 'selected' if filters.category == c.slug }}>{{ c.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="filter-block">
+        <span class="form-label">Marcas</span>
+        {% for b in brands %}
+          <label class="check-row">
+            <input type="checkbox" name="brand" value="{{ b.id }}" class="js-autosubmit" {{ 'checked' if b.id in filters.brands }}>
+            {{ b.name }}
+          </label>
+        {% endfor %}
+      </div>
+
+      <div class="filter-block">
+        <span class="form-label">Precio</span>
+        <div class="row-2">
+          <input type="number" name="min_price" min="0" step="100" placeholder="Mín" class="form-control"
+                 value="{{ filters.min_price if filters.min_price is not none else '' }}">
+          <input type="number" name="max_price" min="0" step="100" placeholder="Máx" class="form-control"
+                 value="{{ filters.max_price if filters.max_price is not none else '' }}">
+        </div>
+      </div>
+
+      <div class="filter-block">
+        <label class="form-label" for="f-nic">Nicotina</label>
+        <select name="nicotine" id="f-nic" class="form-control js-autosubmit">
+          <option value="">Cualquiera</option>
+          <option value="0" {{ 'selected' if filters.nicotine == '0' }}>Sin nicotina</option>
+          <option value="low" {{ 'selected' if filters.nicotine == 'low' }}>Hasta 20 mg</option>
+          <option value="high" {{ 'selected' if filters.nicotine == 'high' }}>Más de 20 mg</option>
+        </select>
+      </div>
+
+      <label class="check-row">
+        <input type="checkbox" name="in_stock" value="1" class="js-autosubmit" {{ 'checked' if filters.in_stock }}>
+        Solo con stock
+      </label>
+
+      <button class="btn btn-primary btn-block" type="submit">Aplicar</button>
+    </form>
+  </aside>
+
+  <section class="catalog-main">
+    <div class="catalog-toolbar">
+      <div>
+        <h1 class="page-title">
+          {% if filters.q %}Resultados para “{{ filters.q }}”{% else %}Productos{% endif %}
+        </h1>
+        <span class="muted">{{ pagination.total }} producto{{ 's' if pagination.total != 1 }}</span>
+      </div>
+      <div class="toolbar-right">
+        <button class="btn btn-outline btn-sm show-sm" type="button" data-toggle="#filters">Filtros</button>
+        <form method="get" action="{{ url_for('shop.catalog') }}">
+          {% for key, values in query_args.items() if key != 'sort' %}
+            {% for v in values %}<input type="hidden" name="{{ key }}" value="{{ v }}">{% endfor %}
+          {% endfor %}
+          <select name="sort" class="form-control form-control-sm js-autosubmit" aria-label="Ordenar">
+            {% for key, label in sort_options.items() %}
+              <option value="{{ key }}" {{ 'selected' if filters.sort == key }}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </form>
+      </div>
+    </div>
+
+    {% if pagination.items %}
+      <div class="product-grid">
+        {% for p in pagination.items %}{{ product_card(p) }}{% endfor %}
+      </div>
+      {{ pagination_nav(pagination, 'shop.catalog', query_args) }}
+    {% else %}
+      <div class="empty-state">
+        <h2>No encontramos productos</h2>
+        <p class="muted">Probá con otros filtros o términos de búsqueda.</p>
+        <a href="{{ url_for('shop.catalog') }}" class="btn btn-outline">Ver todo el catálogo</a>
+      </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

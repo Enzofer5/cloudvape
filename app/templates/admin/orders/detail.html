@@ -1,0 +1,62 @@
+{% extends "admin/_layout.html" %}
+{% from "partials/_macros.html" import field, status_badge %}
+{% block title %}Pedido {{ order.order_number }}{% endblock %}
+{% block page_title %}Pedido {{ order.order_number }}{% endblock %}
+{% block content %}
+<div class="admin-grid-2 wide-left">
+  <div class="card">
+    <div class="section-head"><h3>Detalle</h3>{{ status_badge(order.status) }}</div>
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th>Producto</th><th class="num">P. lista</th><th class="num">P. cobrado</th><th class="num">Cant.</th><th class="num">Subtotal</th></tr></thead>
+      <tbody>
+      {% for i in order.items %}
+        <tr><td>{{ i.product_name }}</td><td class="num">{{ i.list_price|money }}</td><td class="num">{{ i.unit_price|money }}</td>
+            <td class="num">{{ i.quantity }}</td><td class="num">{{ i.line_total|money }}</td></tr>
+      {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr><td colspan="4" class="num">Subtotal</td><td class="num">{{ order.subtotal|money }}</td></tr>
+        <tr><td colspan="4" class="num">Descuentos aplicados</td><td class="num">{{ order.discount_total|money }}</td></tr>
+        <tr><td colspan="4" class="num">Envío</td><td class="num">{{ order.shipping_cost|money }}</td></tr>
+        <tr class="total"><td colspan="4" class="num">Total</td><td class="num">{{ order.total|money }}</td></tr>
+      </tfoot>
+    </table></div>
+    <div class="row-2 info-grid">
+      <div><h4>Cliente</h4>
+        <p><a class="link" href="{{ url_for('admin.customer_detail', user_id=order.user.id) }}">{{ order.user.full_name }}</a><br>{{ order.user.email }}</p></div>
+      <div><h4>Envío</h4>
+        <p>{{ order.recipient_name }} · {{ order.recipient_phone }}<br>{{ order.shipping_address }}</p>
+        {% if order.notes %}<p class="muted small">Notas: {{ order.notes }}</p>{% endif %}</div>
+      <div><h4>Pago</h4><p>{{ order.payment_label }}</p></div>
+      <div><h4>Fecha</h4><p>{{ order.created_at|dt }}</p></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <h3>Cambiar estado</h3>
+      {% if allowed %}
+        <form method="post" novalidate {% if 'cancelled' in allowed|map(attribute='code') %}data-confirm-if-value="cancelled" data-confirm="¿Cancelar el pedido? Se devolverá el stock."{% endif %}>
+          {{ form.hidden_tag() }}
+          {{ field(form.status) }}
+          {{ field(form.comment) }}
+          {{ form.submit(class="btn btn-primary btn-block") }}
+        </form>
+        <p class="small muted">Al cancelar un pedido el stock se repone automáticamente.</p>
+      {% else %}
+        <p class="muted">El pedido está en un estado final ({{ order.status.name }}).</p>
+      {% endif %}
+    </div>
+    <div class="card">
+      <h3>Historial</h3>
+      <ul class="history">
+        {% for h in order.history|reverse %}
+          <li><strong>{{ h.status.name }}</strong><br><small class="muted">{{ h.created_at|dt }}{% if h.user %} · {{ h.user.full_name }}{% endif %}</small>
+            {% if h.comment %}<br><small>{{ h.comment }}</small>{% endif %}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+<a href="{{ url_for('admin.orders') }}" class="link">← Volver a pedidos</a>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Términos y condiciones{% endblock %}
+{% block content %}
+<div class="container narrow">
+  <div class="card prose">
+    <h1>Términos y condiciones</h1>
+    <h3>1. Mayoría de edad</h3>
+    <p>La compra de productos en {{ store_name }} está permitida únicamente a personas mayores de 18 años.
+      Al registrarte declarás bajo juramento que cumplís con este requisito. Podremos solicitar documentación
+      al momento de la entrega y cancelar pedidos si no se acredita la mayoría de edad.</p>
+    <h3>2. Advertencia sanitaria</h3>
+    <p>Los productos que contienen nicotina son adictivos. No se recomienda su uso a no fumadores, embarazadas,
+      personas en período de lactancia ni personas con enfermedades cardiovasculares.</p>
+    <h3>3. Precios y stock</h3>
+    <p>Los precios están expresados en pesos argentinos e incluyen impuestos. El stock se reserva al confirmar
+      el pedido. Los descuentos aplican durante su período de vigencia.</p>
+    <h3>4. Pagos y envíos</h3>
+    <p>Los pedidos quedan pendientes hasta acreditar el pago. Los envíos se realizan dentro de Argentina.</p>
+    <h3>5. Cancelaciones</h3>
+    <p>Podés cancelar tu pedido desde "Mis pedidos" mientras esté pendiente de pago.</p>
+    <p class="muted small">Adaptá este texto a la normativa vigente en tu jurisdicción antes de publicar la tienda.</p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "admin/_layout.html" %}
+{% from "partials/_macros.html" import status_badge %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+<div class="stats-grid">
+  <div class="stat-card"><span>Ventas de hoy</span><strong>{{ d.today.revenue|money }}</strong><small>{{ d.today.orders }} pedidos</small></div>
+  <div class="stat-card"><span>Ventas del mes</span><strong>{{ d.month.revenue|money }}</strong><small>{{ d.month.orders }} pedidos · ticket {{ d.month.avg_ticket|money }}</small></div>
+  <div class="stat-card"><span>Clientes</span><strong>{{ d.customers_total }}</strong><small>{{ d.customers_new_month }} nuevos este mes</small></div>
+  <div class="stat-card"><span>Productos activos</span><strong>{{ d.products_active }}</strong><small>{{ d.low_stock|length }} con stock bajo</small></div>
+</div>
+
+<div class="admin-grid-2">
+  <section class="card">
+    <h3>Facturación últimos 30 días</h3>
+    <canvas class="js-bar-chart" height="260" data-labels='{{ chart['labels']|tojson }}' data-values='{{ chart['values']|tojson }}'></canvas>
+  </section>
+  <section class="card">
+    <h3>Pedidos por estado</h3>
+    <ul class="status-list">
+      {% for code, name, count in d.status_counts %}
+        <li><a href="{{ url_for('admin.orders', status=code) }}"><span class="status status-{{ code }}">{{ name }}</span><strong>{{ count }}</strong></a></li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+
+<div class="admin-grid-2">
+  <section class="card">
+    <div class="section-head"><h3>Últimos pedidos</h3><a class="link small" href="{{ url_for('admin.orders') }}">Ver todos</a></div>
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th>Pedido</th><th>Cliente</th><th>Estado</th><th class="num">Total</th></tr></thead>
+      <tbody>
+      {% for o in d.recent_orders %}
+        <tr><td><a class="link" href="{{ url_for('admin.order_detail', order_id=o.id) }}">{{ o.order_number }}</a><br><small class="muted">{{ o.created_at|dt }}</small></td>
+            <td>{{ o.user.full_name }}</td><td>{{ status_badge(o.status) }}</td><td class="num">{{ o.total|money }}</td></tr>
+      {% else %}<tr><td colspan="4" class="muted">Sin pedidos.</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+  </section>
+  <section class="card">
+    <h3>Más vendidos (30 días)</h3>
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th>Producto</th><th class="num">Unid.</th><th class="num">Facturado</th></tr></thead>
+      <tbody>
+      {% for p in d.top_products %}
+        <tr><td>{{ p.name }}</td><td class="num">{{ p.units }}</td><td class="num">{{ p.revenue|money }}</td></tr>
+      {% else %}<tr><td colspan="3" class="muted">Sin ventas en el período.</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+    <h3 class="mt">⚠️ Stock bajo</h3>
+    <ul class="low-stock">
+      {% for p in d.low_stock %}
+        <li><a href="{{ url_for('admin.product_stock', product_id=p.id) }}">{{ p.name }}</a>
+            <span class="badge {{ 'badge-danger' if p.stock == 0 else 'badge-warning' }}">{{ p.stock }} u.</span></li>
+      {% else %}<li class="muted">Todo el stock está en niveles normales.</li>{% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

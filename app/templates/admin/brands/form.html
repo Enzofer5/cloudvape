@@ -1,0 +1,18 @@
+{% extends "admin/_layout.html" %}
+{% from "partials/_macros.html" import field %}
+{% block title %}Marcas{% endblock %}
+{% block page_title %}{{ 'Editar' if obj else 'Nueva' }} marca{% endblock %}
+{% block content %}
+<div class="card narrow-card">
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    {{ field(form.name) }}
+    
+    {{ field(form.is_active) }}
+    <div class="form-actions">
+      {{ form.submit(class="btn btn-primary") }}
+      <a href="{{ url_for('admin.brands') }}" class="btn btn-outline">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

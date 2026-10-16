@@ -1,0 +1,70 @@
+{% extends "admin/_layout.html" %}
+{% from "partials/_macros.html" import status_badge %}
+{% block title %}Reportes{% endblock %}
+{% block page_title %}Reporte de ventas{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <form method="get" class="filter-bar">
+    <label class="inline-label">Desde <input type="date" name="from" value="{{ start }}" class="form-control" required></label>
+    <label class="inline-label">Hasta <input type="date" name="to" value="{{ end }}" class="form-control" required></label>
+    <select name="status" class="form-control" aria-label="Estado">
+      <option value="">Todos los estados</option>
+      {% for s in statuses %}<option value="{{ s.code }}" {{ 'selected' if status == s.code }}>{{ s.name }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-primary" type="submit">Aplicar</button>
+  </form>
+  <div class="export-btns">
+    {% set qa = {'from': start, 'to': end} %}{% if status %}{% set _ = qa.update({'status': status}) %}{% endif %}
+    <a class="btn btn-outline" href="{{ url_for('admin.reports_csv', **qa) }}">⬇ CSV</a>
+    <a class="btn btn-outline" href="{{ url_for('admin.reports_pdf', **qa) }}">⬇ PDF</a>
+  </div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card"><span>Facturación</span><strong>{{ totals.revenue|money }}</strong><small>Excluye cancelados</small></div>
+  <div class="stat-card"><span>Pedidos válidos</span><strong>{{ totals.orders }}</strong><small>Ticket promedio {{ totals.avg_ticket|money }}</small></div>
+  <div class="stat-card"><span>Unidades vendidas</span><strong>{{ totals.units }}</strong></div>
+  <div class="stat-card"><span>Descuentos otorgados</span><strong>{{ totals.discounts|money }}</strong></div>
+</div>
+
+<div class="card">
+  <h3>Facturación diaria</h3>
+  <canvas class="js-bar-chart" height="240" data-labels='{{ chart['labels']|tojson }}' data-values='{{ chart['values']|tojson }}'></canvas>
+</div>
+
+<div class="admin-grid-3">
+  <div class="card">
+    <h3>Top productos</h3>
+    <table class="table"><thead><tr><th>Producto</th><th class="num">Unid.</th><th class="num">$</th></tr></thead><tbody>
+    {% for p in top %}<tr><td>{{ p.name }}</td><td class="num">{{ p.units }}</td><td class="num">{{ p.revenue|money }}</td></tr>
+    {% else %}<tr><td colspan="3" class="muted">Sin datos</td></tr>{% endfor %}</tbody></table>
+  </div>
+  <div class="card">
+    <h3>Por categoría</h3>
+    <table class="table"><thead><tr><th>Categoría</th><th class="num">Unid.</th><th class="num">$</th></tr></thead><tbody>
+    {% for c in by_category %}<tr><td>{{ c.name }}</td><td class="num">{{ c.units }}</td><td class="num">{{ c.revenue|money }}</td></tr>
+    {% else %}<tr><td colspan="3" class="muted">Sin datos</td></tr>{% endfor %}</tbody></table>
+  </div>
+  <div class="card">
+    <h3>Por marca</h3>
+    <table class="table"><thead><tr><th>Marca</th><th class="num">Unid.</th><th class="num">$</th></tr></thead><tbody>
+    {% for b in by_brand %}<tr><td>{{ b.name }}</td><td class="num">{{ b.units }}</td><td class="num">{{ b.revenue|money }}</td></tr>
+    {% else %}<tr><td colspan="3" class="muted">Sin datos</td></tr>{% endfor %}</tbody></table>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Pedidos del período ({{ orders|length }})</h3>
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Pedido</th><th>Fecha</th><th>Cliente</th><th>Estado</th><th class="num">Subtotal</th><th class="num">Desc.</th><th class="num">Envío</th><th class="num">Total</th></tr></thead>
+    <tbody>
+    {% for o in orders %}
+      <tr><td><a class="link" href="{{ url_for('admin.order_detail', order_id=o.id) }}">{{ o.order_number }}</a></td>
+          <td>{{ o.created_at|dt }}</td><td>{{ o.user.full_name }}</td><td>{{ status_badge(o.status) }}</td>
+          <td class="num">{{ o.subtotal|money }}</td><td class="num">{{ o.discount_total|money }}</td>
+          <td class="num">{{ o.shipping_cost|money }}</td><td class="num"><strong>{{ o.total|money }}</strong></td></tr>
+    {% else %}<tr><td colspan="8" class="muted center">Sin pedidos en el período.</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</div>
+{% endblock %}

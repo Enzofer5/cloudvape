@@ -1,0 +1,40 @@
+{% extends "admin/_layout.html" %}
+{% from "partials/_macros.html" import pagination_nav, post_button %}
+{% block title %}Clientes{% endblock %}
+{% block page_title %}Clientes{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <form method="get" class="filter-bar">
+    <input type="search" name="q" value="{{ q }}" placeholder="Nombre, email o teléfono" class="form-control" maxlength="100">
+    <select name="status" class="form-control">
+      <option value="">Todos</option>
+      <option value="active" {{ 'selected' if status=='active' }}>Activos</option>
+      <option value="inactive" {{ 'selected' if status=='inactive' }}>Inactivos</option>
+    </select>
+    <button class="btn btn-outline" type="submit">Buscar</button>
+  </form>
+  <a href="{{ url_for('admin.customer_new') }}" class="btn btn-primary">+ Nuevo cliente</a>
+</div>
+<div class="card">
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Cliente</th><th>Email</th><th>Teléfono</th><th class="num">Pedidos</th><th>Alta</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+    {% for u in pagination.items %}
+      <tr>
+        <td><a class="link" href="{{ url_for('admin.customer_detail', user_id=u.id) }}">{{ u.full_name }}</a></td>
+        <td>{{ u.email }}</td>
+        <td>{{ u.phone or '—' }}</td>
+        <td class="num">{{ counts.get(u.id, 0) }}</td>
+        <td>{{ u.created_at|dt('%d/%m/%Y') }}</td>
+        <td>{% if u.is_active %}<span class="badge badge-ok">Activo</span>{% else %}<span class="badge badge-muted">Inactivo</span>{% endif %}</td>
+        <td class="actions">
+          <a class="btn btn-sm btn-outline" href="{{ url_for('admin.customer_edit', user_id=u.id) }}">Editar</a>
+          {{ post_button(url_for('admin.customer_delete', user_id=u.id), 'Eliminar', confirm='¿Eliminar el cliente? Si tiene pedidos se desactivará.') }}
+        </td>
+      </tr>
+    {% else %}<tr><td colspan="7" class="muted center">No se encontraron clientes.</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+  {{ pagination_nav(pagination, 'admin.customers', query_args) }}
+</div>
+{% endblock %}

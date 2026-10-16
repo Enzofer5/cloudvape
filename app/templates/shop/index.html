@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import product_card %}
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-text">
+      <span class="eyebrow">Nuevos ingresos todas las semanas</span>
+      <h1>Tu próximo vape,<br><span class="gradient-text">en un par de clics.</span></h1>
+      <p>Descartables, pods recargables, líquidos y repuestos de las mejores marcas. Productos originales con envío a todo el país.</p>
+      <div class="hero-actions">
+        <a href="{{ url_for('shop.catalog') }}" class="btn btn-primary btn-lg">Ver catálogo</a>
+        {% if categories %}
+          <a href="{{ url_for('shop.catalog', category=categories[0].slug) }}" class="btn btn-outline btn-lg">{{ categories[0].name }}</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <div class="blob blob-1"></div><div class="blob blob-2"></div>
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="" class="hero-logo">
+    </div>
+  </div>
+</section>
+
+<section class="container section">
+  <div class="features">
+    <div class="feature"><strong>🚚 Envíos a todo el país</strong><span>Gratis desde {{ free_shipping_from|money }}</span></div>
+    <div class="feature"><strong>✅ Productos originales</strong><span>Importadores oficiales</span></div>
+    <div class="feature"><strong>💳 Múltiples medios de pago</strong><span>Transferencia, efectivo o tarjeta</span></div>
+    <div class="feature"><strong>🔞 Compra responsable</strong><span>Solo mayores de 18 años</span></div>
+  </div>
+</section>
+
+{% if categories %}
+<section class="container section">
+  <h2 class="section-title">Categorías</h2>
+  <div class="category-grid">
+    {% for c in categories %}
+      <a class="category-tile" href="{{ url_for('shop.catalog', category=c.slug) }}">
+        <strong>{{ c.name }}</strong>
+        {% if c.description %}<span>{{ c.description }}</span>{% endif %}
+      </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if featured %}
+<section class="container section">
+  <div class="section-head">
+    <h2 class="section-title">Destacados</h2>
+    <a href="{{ url_for('shop.catalog') }}" class="link">Ver todo →</a>
+  </div>
+  <div class="product-grid">
+    {% for p in featured %}{{ product_card(p) }}{% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if latest %}
+<section class="container section">
+  <div class="section-head">
+    <h2 class="section-title">Recién llegados</h2>
+    <a href="{{ url_for('shop.catalog', sort='newest') }}" class="link">Ver todo →</a>
+  </div>
+  <div class="product-grid">
+    {% for p in latest %}{{ product_card(p) }}{% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if not featured and not latest %}
+<section class="container section empty-state">
+  <h2>Todavía no hay productos publicados</h2>
+  <p class="muted">Ingresá al panel de administración para cargar el catálogo.</p>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "admin/_layout.html" %}
+{% from "partials/_macros.html" import field %}
+{% block title %}Precios{% endblock %}
+{% block page_title %}Actualización masiva de precios{% endblock %}
+{% block content %}
+<div class="card narrow-card">
+  <p class="muted">Aplica un porcentaje de aumento (positivo) o rebaja (negativo) sobre el precio de lista.
+    Para cambiar el precio de un único producto, editalo desde <a class="link" href="{{ url_for('admin.products') }}">Productos</a>.
+    Para promociones temporales usá <a class="link" href="{{ url_for('admin.discounts') }}">Descuentos</a>.</p>
+  <form method="post" novalidate data-confirm="¿Aplicar la actualización de precios? Esta acción modifica los precios de lista.">
+    {{ form.hidden_tag() }}
+    {{ field(form.percent, help="Ej.: 10 = +10% · -5 = -5%") }}
+    <div class="row-2">{{ field(form.category_id) }}{{ field(form.brand_id) }}</div>
+    {{ form.submit(class="btn btn-primary") }}
+  </form>
+</div>
+{% endblock %}
